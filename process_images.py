@@ -29,7 +29,7 @@ class Dimensions:
 
 def process_image(image_filename):
     """
-    sdsdfsdf
+    
     """
     input_img = Image.open(image_filename).convert("RGB")
     nn_mask = nn_predict(input_img)

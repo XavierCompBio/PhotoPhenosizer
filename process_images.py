@@ -1,21 +1,14 @@
-import sys
 import csv
-from tempfile import TemporaryDirectory
 import os
+import sys
+from dataclasses import dataclass
 from pathlib import Path
-# Imports for using model to predict microscope image
-import numpy
+from tempfile import TemporaryDirectory
+import cv2
 import torch
+from PIL import Image
 from torchvision import transforms
 from torchvision.utils import save_image
-from PIL import Image
-# Imports for thresholding, blob, and area
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-# ----------------------------------------------------------------------------------------
-from dataclasses import dataclass
-
 
 @dataclass
 class Dimensions:
@@ -25,11 +18,12 @@ class Dimensions:
     areaContour: float
 
 
-
-
 def process_image(image_filename):
     """
-    
+    Processes the (image_filename) image to get dimensions of areas, lengths, and width in pixels
+
+    :param image_filename: the name of the image
+    :return: the csv file of all the metrics in a table
     """
     input_img = Image.open(image_filename).convert("RGB")
     nn_mask = nn_predict(input_img)
@@ -40,12 +34,14 @@ def process_image(image_filename):
     dimensions = calculate_dimensions(filled_cells, len(areas))
     write_result(image_filename, areas, dimensions, blob_keypoints)
 
-# ----------------------------------------------------------------------------------------
-# code for model to predict microscope image
-# returns nn_mask = out
-
 
 def nn_predict(input_img):
+    """
+    Uses a trained NN model to segment the cells from the image
+
+    :param input_img: the input image
+    :return: the image of the cells from the NN
+    """
     model = torch.load('weights.pt')
     model.eval()
     model.to('cpu')
@@ -68,32 +64,24 @@ def nn_predict(input_img):
         save_image(out, 'output.tif')
         save_image(out, temp_file_path)
         out = cv2.imread(temp_file_path, cv2.IMREAD_GRAYSCALE)
-        
 
     return out
 
-# ----------------------------------------------------------------------------------------
-# threshold code
-# returns threshold_mask = im
 
 def threshold(nn_mask):
-    # nn_mask - predicted img
-    # thresholds (binary) image; any pixels above 215 gets turned into 255 (white)
-    
+    """
+    Thresholds the NN image
 
+    :param nn_mask: the NN image
+    :return: the threshold mask of the NN image
+    """
     th, threshold_mask = cv2.threshold(nn_mask, 200, 255, cv2.THRESH_BINARY)
-    
     return threshold_mask
 
-# ----------------------------------------------------------------------------------------
-# blob detection code
-# returns blob_keypoints = keypoints
-
-
 def detect_blobs(threshold_mask):
-    # invert threshold im
-    # threshold - inverted threshold img (black -> white; white -> black)
-    # -> white cells are now black and black background is now white
+    """
+
+    """
     retval, threshold = cv2.threshold(
         threshold_mask, 200, 255, cv2.THRESH_BINARY_INV)
 
@@ -136,9 +124,7 @@ def detect_blobs(threshold_mask):
 
     return blob_keypoints
 
-# ----------------------------------------------------------------------------------------
-# filled image function
-# returns filled_img
+
 def fill_cells(threshold_mask, blob_keypoints):
     im_floodfill = threshold_mask.copy()
 
@@ -157,22 +143,18 @@ def fill_cells(threshold_mask, blob_keypoints):
 
     return im_floodfill
 
-# ----------------------------------------------------------------------------------------
-# areas function
+
 def calculate_areas(filled_cells, blob_keypoints):
- 
     cell_count = len(blob_keypoints)
 
     # calculate the areas
     areas = cv2.calcHist([filled_cells], [0], None, [256], [0, 255])
     # slice the array down based on the number of cells
-    areas = areas[1:cell_count+1, 0]
+    areas = areas[1:cell_count + 1, 0]
 
     return areas
 
-# ----------------------------------------------------------------------------------------
-# dimensions function
-# results - measure dimensions of each cell via contour
+
 def calculate_dimensions(filled_img, cell_count):
     dimensions = []
     for color in range(1, cell_count + 1):
@@ -200,10 +182,6 @@ def calculate_dimensions(filled_img, cell_count):
 
     return dimensions
 
-# ----------------------------------------------------------------------------------------
-# results function
-#
-
 
 def write_result(image_filename, areas, dimensions, blob_keypoints):
     csv_filename = Path(image_filename).with_suffix('.csv')
@@ -215,9 +193,6 @@ def write_result(image_filename, areas, dimensions, blob_keypoints):
             writer.writerow([cell_id, int(keypoint.pt[0]), int(keypoint.pt[1]), area, dimension.areaContour,
                              dimension.lengthCircle, dimension.lengthEllipse,
                              dimension.widthEllipse])
-
-# ----------------------------------------------------------------------------------------
-# master function
 
 
 def main():

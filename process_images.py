@@ -1,14 +1,16 @@
 import csv
 import os
-import sys
+from argparse import ArgumentParser
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
 import cv2
 import torch
 from PIL import Image
 from torchvision import transforms
 from torchvision.utils import save_image
+
 
 @dataclass
 class Dimensions:
@@ -18,7 +20,14 @@ class Dimensions:
     areaContour: float
 
 
-def process_image(image_filename):
+def write_image(original_filename, string_label, image):
+    original_path = Path(original_filename)
+    new_stem = original_path.stem + string_label
+    new_filename = original_path.with_stem(new_stem)
+    cv2.imwrite(str(new_filename), image)
+
+
+def process_image(image_filename, args):
     """
     Processes the (image_filename) image to get dimensions of areas, lengths, and width in pixels
 
@@ -26,23 +35,29 @@ def process_image(image_filename):
     :return: the csv file of all the metrics in a table
     """
     input_img = Image.open(image_filename).convert("RGB")
-    nn_mask = nn_predict(input_img)
+    nn_mask = nn_predict(input_img, args.weights_file)
     threshold_mask = threshold(nn_mask)
     blob_keypoints = detect_blobs(threshold_mask)
     filled_cells = fill_cells(threshold_mask, blob_keypoints)
     areas = calculate_areas(filled_cells, blob_keypoints)
     dimensions = calculate_dimensions(filled_cells, len(areas))
     write_result(image_filename, areas, dimensions, blob_keypoints)
+    if args.write_nn_mask:
+        write_image(image_filename, '-nn_mask', nn_mask)
+    if args.write_threshold_mask:
+        write_image(image_filename, '-threshold', threshold_mask)
+    if args.write_filled_cells:
+        write_image(image_filename, '-filled_cells', filled_cells)
 
 
-def nn_predict(input_img):
+def nn_predict(input_img, weights_filename):
     """
     Uses a trained NN model to segment the cells from the image
 
     :param input_img: the input image
     :return: the image of the cells from the NN
     """
-    model = torch.load('weights.pt')
+    model = torch.load(weights_filename)
     model.eval()
     model.to('cpu')
 
@@ -77,6 +92,7 @@ def threshold(nn_mask):
     """
     th, threshold_mask = cv2.threshold(nn_mask, 200, 255, cv2.THRESH_BINARY)
     return threshold_mask
+
 
 def detect_blobs(threshold_mask):
     """
@@ -196,8 +212,23 @@ def write_result(image_filename, areas, dimensions, blob_keypoints):
 
 
 def main():
-    for image_filename in sys.argv[1:]:
-        process_image(image_filename)
+    parser = ArgumentParser()
+    parser.add_argument('--write_nn_mask', action='store_true',
+                        help='Write the mask images produced by the neural '
+                             'network')
+    parser.add_argument('--write_threshold_mask', action='store_true',
+                        help='Write the result of thresholding')
+    parser.add_argument('--write_filled_cells', action='store_true',
+                        help='Write the result of filling detected cells with '
+                             'different grays')
+    parser.add_argument('--weights_file',
+                        help='Specify the path to the weights file')
+    parser.add_argument('image_files', nargs='+')
+    args = parser.parse_args()
+    if args.weights_file is None:
+        args.weights_file = 'weights.pt'
+    for filename in args.image_files:
+        process_image(filename, args)
 
 
 if __name__ == "__main__":

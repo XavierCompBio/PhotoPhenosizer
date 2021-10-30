@@ -76,7 +76,6 @@ def nn_predict(input_img, weights_filename):
 
     with TemporaryDirectory() as temp_dir_path:
         temp_file_path = os.path.join(temp_dir_path, 'output.tif')
-        save_image(out, 'output.tif')
         save_image(out, temp_file_path)
         out = cv2.imread(temp_file_path, cv2.IMREAD_GRAYSCALE)
 

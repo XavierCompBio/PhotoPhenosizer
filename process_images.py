@@ -39,7 +39,7 @@ def process_image(image_filename, args):
     threshold_mask = threshold(nn_mask)
     blob_keypoints = detect_blobs(threshold_mask)
     filled_cells = fill_cells(threshold_mask, blob_keypoints)
-    areas = calculate_areas(filled_cells, blob_keypoints)
+    areas = calculate_areas(filled_cells, len(blob_keypoints))
     dimensions = calculate_dimensions(filled_cells, len(areas))
     write_result(image_filename, areas, dimensions, blob_keypoints)
     if args.write_nn_mask:
@@ -141,6 +141,9 @@ def detect_blobs(threshold_mask):
 
 
 def fill_cells(threshold_mask, blob_keypoints):
+    """
+
+    """
     im_floodfill = threshold_mask.copy()
 
     if len(blob_keypoints) > 254:
@@ -159,18 +162,39 @@ def fill_cells(threshold_mask, blob_keypoints):
     return im_floodfill
 
 
-def calculate_areas(filled_cells, blob_keypoints):
-    cell_count = len(blob_keypoints)
+def calculate_areas(filled_cells, cell_count):
+    """
+    Calculate the areas of regions that have been identified as cells in an
+    image. Areas are in pixels.
 
-    # calculate the areas
+    The given image must have a black background, and each cell region must be
+    identified with a unique color starting with 1 and increasing sequentially.
+
+    :param filled_cells: the image containing cell regions
+    :param cell_count: the number of cell regions in the image
+    :return: a list containing the areas of the cell regions
+    """
+
+    # since each cell region is a different color, a histogram of pixel counts
+    # of each color will give us the number of pixels in each cell region
     areas = cv2.calcHist([filled_cells], [0], None, [256], [0, 255])
-    # slice the array down based on the number of cells
+    # we only want the values for the colors 1 through cell_count
     areas = areas[1:cell_count + 1, 0]
 
     return areas
 
 
 def calculate_dimensions(filled_img, cell_count):
+    """
+    Calculate the dimensions of regions that have been identified as cells
+    in an image. Dimensions are in pixels.
+
+    Given image must have same properties as in calculate_areas() function
+
+    :param filled_img: the image containing the cell regions
+    :param cell_count: the number of cell regions in the image
+    :return: a list containing the dimensions of the cell regions
+    """
     dimensions = []
     for color in range(1, cell_count + 1):
         isolated_img = filled_img.copy()
@@ -183,14 +207,15 @@ def calculate_dimensions(filled_img, cell_count):
             isolated_img, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
         isolated_img = cv2.drawContours(
             isolated_img, cnts, contourIdx=-1, color=(0, 255, 0), thickness=2, lineType=cv2.LINE_AA)
-
+        # calculate the length and width of each cell using the fitEllipse function
         ellipse = cv2.fitEllipse(cnts[0])
         lengthEllipse = max(ellipse[1])
         widthEllipse = min(ellipse[1])
 
+        # calculate the length of each cell using the minEnclosingCircle function
         (x, y), r = cv2.minEnclosingCircle(cnts[0])
         lengthCircle = r * 2
-
+        # calculate the area of each cell using the areaContour function
         areaContour = cv2.contourArea(cnts[0])
         dimensions.append(Dimensions(
             lengthCircle, lengthEllipse, widthEllipse, areaContour))
@@ -199,6 +224,15 @@ def calculate_dimensions(filled_img, cell_count):
 
 
 def write_result(image_filename, areas, dimensions, blob_keypoints):
+    """
+    Write all the results of the cells in a csv file
+
+    :param image_filename: name used to label the csv file
+    :param areas: list of the areas of the cells
+    :param dimensions: list of the different dimensions of the cells
+    :param blob_keypoints: list of all the x, y of the cells
+    :return: a csv file that contains all the metrics of the cells
+    """
     csv_filename = Path(image_filename).with_suffix('.csv')
     with open(csv_filename, 'w') as f:
         writer = csv.writer(f)
@@ -211,6 +245,10 @@ def write_result(image_filename, areas, dimensions, blob_keypoints):
 
 
 def main():
+    """
+    Main function with listed arguments that can be passed through
+    the terminal
+    """
     parser = ArgumentParser()
     parser.add_argument('--write_nn_mask', action='store_true',
                         help='Write the mask images produced by the neural '

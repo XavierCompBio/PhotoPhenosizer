@@ -21,6 +21,15 @@ class Dimensions:
 
 
 def write_image(original_filename, string_label, image):
+    """
+    Writes the images into actual files in the directory
+    if the arguments are passed through
+
+    :param original_filename: the name of the image
+    :param string_label: the name of the arguments
+    :param image: the wanted image based on the arguments
+    :return: the images at the argument checkpoints
+    """
     original_path = Path(original_filename)
     new_stem = original_path.stem + string_label
     new_filename = original_path.with_stem(new_stem)
@@ -32,6 +41,8 @@ def process_image(image_filename, args):
     Processes the (image_filename) image to get dimensions of areas, lengths, and width in pixels
 
     :param image_filename: the name of the image
+    :param args: any arguments that was passed from the user
+    to the terminal
     :return: the csv file of all the metrics in a table
     """
     input_img = Image.open(image_filename).convert("RGB")
@@ -55,6 +66,8 @@ def nn_predict(input_img, weights_filename):
     Uses a trained NN model to segment the cells from the image
 
     :param input_img: the input image
+    :param weights_filename: if an argument was passed through to
+    specify another weights file to be used, then use it
     :return: the image of the cells from the NN
     """
     model = torch.load(weights_filename)
@@ -72,8 +85,8 @@ def nn_predict(input_img, weights_filename):
     torch.set_grad_enabled(False)
     prediction = model(input_img)
     out = prediction['out'].data.cpu()
-    # out = stores output.tif image
 
+    # saves output image in a temporary directory to be later deleted
     with TemporaryDirectory() as temp_dir_path:
         temp_file_path = os.path.join(temp_dir_path, 'output.tif')
         save_image(out, temp_file_path)
@@ -89,13 +102,21 @@ def threshold(nn_mask):
     :param nn_mask: the NN image
     :return: the threshold mask of the NN image
     """
+    # any pixels that are above 200, turn it into 255 (white)
     th, threshold_mask = cv2.threshold(nn_mask, 200, 255, cv2.THRESH_BINARY)
     return threshold_mask
 
 
 def detect_blobs(threshold_mask):
     """
+    Creates a list of keypoints of all the cells. Keypoints are the x, y coordinates
+    of the cells
 
+    Different parameters can be adjusted to determine how accurate the selection
+    should be. This is dependent on type of microscope and settings within it.
+
+    :param threshold_mask: a threshold image of the image from the NN
+    :return: the list of keypoints of each cell
     """
     retval, threshold = cv2.threshold(
         threshold_mask, 200, 255, cv2.THRESH_BINARY_INV)
@@ -142,13 +163,19 @@ def detect_blobs(threshold_mask):
 
 def fill_cells(threshold_mask, blob_keypoints):
     """
+    Fill in the threshold image with just single cells that we want while
+    getting rid of the clumps and extra noise.
 
+    :param threshold_mask: the threshold image from the NN
+    :param blob_keypoints: the keypoints of all the cells
+    :return: an image with just the wanted cells in a grays with
+    a black background
     """
     im_floodfill = threshold_mask.copy()
 
     if len(blob_keypoints) > 254:
         print("Warning: Image contains more than 254 cells. Only the first 254 cells will be included.")
-
+    # cycle through all the keypoints for the cells and fill in each cell with a gray color
     cell_color = 1
     for keypoint in blob_keypoints[:254]:
         x = int(keypoint.pt[0])

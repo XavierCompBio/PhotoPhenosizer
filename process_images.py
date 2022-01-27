@@ -102,8 +102,8 @@ def threshold(nn_mask):
     :param nn_mask: the NN image
     :return: the threshold mask of the NN image
     """
-    # any pixels that are above 200, turn it into 255 (white)
-    th, threshold_mask = cv2.threshold(nn_mask, 200, 255, cv2.THRESH_BINARY)
+    # any pixels that are above the first number, turn it into 255 (white)
+    th, threshold_mask = cv2.threshold(nn_mask, 155, 255, cv2.THRESH_BINARY)
     return threshold_mask
 
 

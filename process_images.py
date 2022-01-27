@@ -119,7 +119,7 @@ def detect_blobs(threshold_mask):
     :return: the list of keypoints of each cell
     """
     retval, threshold = cv2.threshold(
-        threshold_mask, 200, 255, cv2.THRESH_BINARY_INV)
+        threshold_mask, 155, 255, cv2.THRESH_BINARY_INV)
 
     # Setup SimpleBlobDetector parameters.
     params = cv2.SimpleBlobDetector_Params()

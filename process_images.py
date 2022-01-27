@@ -166,6 +166,14 @@ def detect_blobs(threshold_mask):
     # Detect blobs.
     blob_keypoints = detector.detect(threshold)
 
+    blob_keypoints = []
+    for keypoint in detector.detect(threshold):
+        x = int(keypoint.pt[0])
+        y = int(keypoint.pt[1])
+        color = threshold_mask[y, x]
+        if color == 255:
+            blob_keypoints.append(keypoint)
+
     return blob_keypoints
 
 

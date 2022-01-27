@@ -118,11 +118,17 @@ def detect_blobs(threshold_mask):
     :param threshold_mask: a threshold image of the image from the NN
     :return: the list of keypoints of each cell
     """
+    # Cells are now black and background is now white
     retval, threshold = cv2.threshold(
         threshold_mask, 155, 255, cv2.THRESH_BINARY_INV)
 
     # Setup SimpleBlobDetector parameters.
     params = cv2.SimpleBlobDetector_Params()
+
+    # Finds all the blobs of a specific color.
+    params.filterByColor = 1
+    # Finds darker blobs because cells are now black and background is white
+    params.blobColor = 0
 
     # Change thresholds
     params.minThreshold = 10
@@ -134,7 +140,7 @@ def detect_blobs(threshold_mask):
     # maxArea = 2451 when threshold = 215
     params.filterByArea = True
     params.minArea = 500
-    params.maxArea = 2685
+    params.maxArea = 2350
 
     # Filter by Circularity
     params.filterByCircularity = False
@@ -143,10 +149,12 @@ def detect_blobs(threshold_mask):
     # Filter by Convexity
     params.filterByConvexity = True
     params.minConvexity = 0.87
+    params.maxConvexity = 1
 
     # Filter by Inertia
     params.filterByInertia = True
     params.minInertiaRatio = 0.01
+    params.maxInertiaRatio = 1
 
     # Create a detector with the parameters
     ver = (cv2.__version__).split('.')

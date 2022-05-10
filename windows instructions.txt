@@ -1,0 +1,26 @@
+*install terminal from microsoft store
+
+https://dev.to/vsalbuq/how-to-install-oh-my-zsh-on-windows-10-home-edition-49g2
+
+*enable linux subsystem on windows machine
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+*install ubuntu through windows store
+*open up ubuntu in the windows start menu
+*commands to input: 
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install zsh
+zsh
+*select 2 as the set up option for the zsh shell
+sudo apt-get install curl
+sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+*close out of all the terminal windows and open up the windows terminal from the microsoft store from step 1
+*adjust the settings so that the linux terminal is the default and the startingDirectory is set to wherever
+you want
+
+*close and re open the terminal and use the "cd" command to set the directory to where the virtual environment
+will be. (might have to look up how to use the "cd" command in linux to navigate around the directories)
+
+Follow the rest of the steps in the README.md
+

@@ -1,3 +1,5 @@
+# Method 1: Getting a zsh shell on windows to allow for same terminal interactions
+
 *install terminal from microsoft store
 
 https://dev.to/vsalbuq/how-to-install-oh-my-zsh-on-windows-10-home-edition-49g2
@@ -24,3 +26,7 @@ will be. (might have to look up how to use the "cd" command in linux to navigate
 
 Follow the rest of the steps in the README.md
 
+# Method 2: Using a different command for to get the same results but wont have the zsh shell (works the fastest)
+
+* follow the same instructions as README.md to create a virtual environment
+Use this command to run the program instead of the MacOS command: for %i in (*.tif) do python process_images.py %i

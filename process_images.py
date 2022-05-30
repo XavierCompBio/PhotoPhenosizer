@@ -103,7 +103,7 @@ def threshold(nn_mask):
     :return: the threshold mask of the NN image
     """
     # any pixels that are above the first number, turn it into 255 (white)
-    th, threshold_mask = cv2.threshold(nn_mask, 155, 255, cv2.THRESH_BINARY)
+    th, threshold_mask = cv2.threshold(nn_mask, 170, 255, cv2.THRESH_BINARY)
     return threshold_mask
 
 
@@ -139,20 +139,20 @@ def detect_blobs(threshold_mask):
     # maxArea = 2534 when threshold = 210
     # maxArea = 2451 when threshold = 215
     params.filterByArea = True
-    params.minArea = 500
-    params.maxArea = 2350
+    params.minArea = 400
+    # params.maxArea = 2350
 
     # Filter by Circularity
-    params.filterByCircularity = False
-    params.minCircularity = 0.2
+    params.filterByCircularity = True
+    params.minCircularity = 0.1
 
     # Filter by Convexity
-    params.filterByConvexity = True
+    params.filterByConvexity = False
     params.minConvexity = 0.87
     params.maxConvexity = 1
 
     # Filter by Inertia
-    params.filterByInertia = True
+    params.filterByInertia = False
     params.minInertiaRatio = 0.01
     params.maxInertiaRatio = 1
 

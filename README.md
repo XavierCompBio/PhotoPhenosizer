@@ -16,6 +16,8 @@ We have developed a streamline approach to acquiring cell dimensions in S. pombe
 ### Installing
 
 * Set up a virtual environment and install all necessary libraries from requirements.txt
+* [creating a virtual environment in Windows](docs/windows_venv.md)
+* [creating a virtual environment in MacOS](docs/macos_venv.md)
 * Training pipeline of the PP program came from this repository: https://github.com/msminhas93/DeepLabv3FineTuning 
 
 ### Executing program

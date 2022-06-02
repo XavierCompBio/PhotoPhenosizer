@@ -28,26 +28,30 @@ We have developed a streamline approach to acquiring cell dimensions in S. pombe
 2. Put the trained weights file into the same folder as this repository. To get a sample trained weights file, contact the authors. For training your own weights file from your own segmented images: [Training code](https://github.com/msminhas93/DeepLabv3FineTuning)
 3. Run the below command:
 ```
-python process_images.py *.tif --write_nn_mask --write_threshold_mask --write_filled_cells --weights_file [name of weights file here]
+python process_images.py *.tif --write_nn_mask --write_threshold_mask --write_filled_cells
 ```
 * If don't want to create all of the intermediate files such as the mask or filled_cells images, then one can remove those parameters:
 ```
-python process_images.py *.tif --weights_file [name of weights file here]
+python process_images.py *.tif 
 ```
-* If weights file name is just "weights.pt", then one can remove that parameter:
+* If you have a weights file that you want to use then you can add an optional argument to specify which you want to use:
 ```
-python process_images.py *.tif
+python process_images.py *.tif --weights_file <name of file>
 ```
 
 #### WindowsOS instructions:
 
 * Same starting process as MacOS instructions except use this command:
 ```
-for %i in (*.tif) do python3 process_images.py %i [--write_nn_mask] [--write_threshold_mask] [--write_filled_cells] [--weights_file [name of file]]
+for %i in (*.tif) do python3 process_images.py %i [--write_nn_mask] [--write_threshold_mask] [--write_filled_cells] [--weights_file <name of file>]
 ```
 ## Help
 
-
+Running the program without any arguments like so:
+```
+python process_images.py *.tif
+```
+will bring the help menu up for more information on what arguments can be passed through
 ## Authors
 
 Contributors names and contact info

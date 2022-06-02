@@ -16,3 +16,6 @@ py -m venv [name of environment]
 .\[name of environment]/Scripts/activate
 ```
 7. Should see the command prompt input line change to the correct environment.
+
+## Reference
+* [venv documentation](https://docs.python.org/3/library/venv.html)

@@ -19,6 +19,7 @@ We have developed a streamline approach to acquiring cell dimensions in S. pombe
 * Training pipeline of the PP program came from this repository: https://github.com/msminhas93/DeepLabv3FineTuning 
 
 ### Executing program
+#### MacOS instructions:
 
 * First make sure that a virtual environment is setup and contains all of the libraries
 1. First, put all of the microscopy images into a folder and change the directory path in the terminal to the path where the images are
@@ -35,6 +36,13 @@ python process_images.py *.tif --weights_file [name of weights file here]
 ```
 python process_images.py *.tif
 ```
+
+#### WindowsOS instructions:
+
+* Same starting process as MacOS instructions except use this command:
+```
+for %i in (*.tif) do python3 process_images.py %i [--write_nn_mask] [--write_threshold_mask] [--write_filled_cells] [--weights_file [name of file]]
+```
 ## Help
 
 
@@ -42,9 +50,9 @@ python process_images.py *.tif
 
 Contributors names and contact info
 
-Martin Vo(vom@xavier.edu)
-Nathan Sommer(sommern1@xavier.edu)
-Ryan Miller(millerr33@xavier.edu)
+* Martin Vo(vom@xavier.edu)
+* Nathan Sommer(sommern1@xavier.edu)
+* Ryan Miller(millerr33@xavier.edu)
 
 ## Version History
 

@@ -51,11 +51,12 @@ for %i in (*.tif) do python3 process_images.py %i [--write_nn_mask] [--write_thr
 ```
 ## Help
 
-Running the program without any arguments like so:
+To bring up a help message, run this command:
 ```
-python process_images.py *.tif
+python process_images.py -h
 ```
-will bring the help menu up for more information on what arguments can be passed through
+This will bring the help menu up for more information on what arguments can be passed through.
+
 ## Authors
 
 Contributors names and contact info

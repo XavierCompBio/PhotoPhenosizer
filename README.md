@@ -4,28 +4,31 @@ A rapid machine learning-based method to measure cell dimensions in S. pombe.
 
 ## Description
 
-We have developed a streamline approach to acquiring cell dimensions in S. pombe. With this pipeline, one could go from microscopy images to statistical results about ten times faster than manual segmentation and measurments. It is built on the PyTorch framework with the utilization of DeeplabV3 for training purposes.
+We have developed a streamline approach to acquiring cell dimensions in S. pombe. With this pipeline, one can go from microscopy images to statistical results about 10x faster using consumer level hardware than manual segmentation and measurements. It is built on the PyTorch framework with the utilization of DeeplabV3 for training purposes. However, any PyTorch trained models that can accept images can be used.
 
-This program takes a list of microscopy images of fission yeast cells as its input and it will output a csv file containing the count of cells, x and y pixel coordinates of the cell, and its cell dimensions (area, length, and width).
+This program takes microscopy images of fission yeast cells as its input and it will output a csv file for each image. Each csv file contains the count of cells, x and y pixel coordinates of the cell, and its cell dimensions (area, length, and width).
 
-The process is accomplished by utilizing a neural network to create an initial mask image of the cells that it was able to identify and then thresholding was applied to clean up the initial mask. After, each cell was filled with a different grayscale color and the dimensions were measured using opencv functions. The program can optionally save any of the intermediate images throughout the process by using optional arguments.
+The process is accomplished by utilizing a neural network to create an initial mask image of the cells that it was able to identify and then thresholding is applied to clean up the initial mask. After, each cell is filled with a different grayscale color and the dimensions are measured using opencv functions. The program can optionally save any of the intermediate images throughout the process by using optional arguments.
 
 ## Getting Started
 
 ### Dependencies
 
 * Libraries that are required to run the program are: numpy, torch, torchvision, pillow, opencv-python, matplotlib. See requirements.txt to know which libraries to install.
-* PombePhenosizer (PP) is able to operate on MacOS, WindowsOS, and Linux.
+* PombePhenosizer (PP) is able to operate on any machine with Python 3.8 or above.
 
 ### Installing
 
 * Set up a virtual environment and install all necessary libraries from requirements.txt
 * [creating a virtual environment in Windows](docs/windows_venv.md)
 * [creating a virtual environment in MacOS](docs/macos_venv.md)
-* Training pipeline of the PP program came from this repository: https://github.com/msminhas93/DeepLabv3FineTuning 
 
-### Executing program
-#### MacOS instructions:
+### Training
+
+We have had success training our own model using the DeepLabv#FineTunning repository: https://github.com/msminhas93/DeepLabv3FineTuning 
+
+### Usage
+#### General Instructions:
 
 * First make sure that a virtual environment is setup and contains all of the libraries
 1. First, put all of the microscopy images into a folder and change the directory path in the terminal to the path where the images are
@@ -38,14 +41,14 @@ python process_images.py --weights_file weights.pt image1.tif image2.tif
 ```
 python process_images.py [--weights_file <filename>] [--write_nn_mask] [--write_threshold_mask] [--write_filled_cells]
 ```
-* If you have multiple images you can use the \*.tif shortcut to loop through all of the images
+#### Bulk Image Processing Instructions:
+   
+* If you are using a bash shell or zsh shell you can use the \*.tif shortcut to loop through all of the images
 ```
 python process_images.py *.tif
 ```
+* If you are on WindowsOS you can run this command:
 
-#### WindowsOS instructions:
-
-* Same starting process as MacOS instructions except use this command:
 ```
 for %i in (*.tif) do python3 process_images.py %i [--write_nn_mask] [--write_threshold_mask] [--write_filled_cells] [--weights_file <filename>]
 ```

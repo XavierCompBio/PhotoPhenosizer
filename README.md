@@ -14,7 +14,10 @@ The process is accomplished by utilizing a neural network to create an initial m
 
 ### Dependencies
 
-* Libraries that are required to run the program are: numpy, torch, torchvision, pillow, opencv-python, matplotlib. See requirements.txt to know which libraries to install.
+* Libraries that are required to run the program can be installed using this command:
+```
+pip3 install -r requirements.txt
+```
 * PombePhenosizer (PP) is able to operate on any machine with Python 3.8 or above.
 
 ### Installing

@@ -22,8 +22,10 @@ class Dimensions:
 
 def write_image(original_filename, string_label, image):
     """
-    Writes the images into actual files in the directory
-    if the arguments are passed through
+    Writes the label onto the image name if the arguments are passed through
+
+    For example: --write_nn_mask argument would add the "-nn_mask" label 
+    to the image name and write it out to the directory ('image-nn_mask.tif')
 
     :param original_filename: the name of the image
     :param string_label: the name of the arguments
@@ -38,7 +40,8 @@ def write_image(original_filename, string_label, image):
 
 def process_image(image_filename, args):
     """
-    Processes the (image_filename) image to get dimensions of areas, lengths, and width in pixels
+    Processes the (image_filename) image to get dimensions of 
+    areas, lengths, and width in pixels
 
     :param image_filename: the name of the image
     :param args: any arguments that was passed from the user
@@ -179,8 +182,8 @@ def detect_blobs(threshold_mask):
 
 def fill_cells(threshold_mask, blob_keypoints):
     """
-    Fill in the threshold image with just single cells that we want while
-    getting rid of the clumps and extra noise.
+    Fill in each cell in the threshold image with a unique grayscale color up to 254. 
+    The given blob keypoints helps with knowing which cells to fill in.
 
     :param threshold_mask: the threshold image from the NN
     :param blob_keypoints: the keypoints of all the cells
@@ -208,7 +211,7 @@ def fill_cells(threshold_mask, blob_keypoints):
 def calculate_areas(filled_cells, cell_count):
     """
     Calculate the areas of regions that have been identified as cells in an
-    image. Areas are in pixels.
+    image. Areas are in pixels squared.
 
     The given image must have a black background, and each cell region must be
     identified with a unique color starting with 1 and increasing sequentially.

@@ -51,6 +51,7 @@ def process_image(image_filename, args):
     input_img = Image.open(image_filename).convert("RGB")
     nn_mask = nn_predict(input_img, args.weights_file)
     threshold_mask = threshold(nn_mask)
+    threshold_mask = erod_dilate(threshold_mask)
     blob_keypoints = detect_blobs(threshold_mask)
     filled_cells = fill_cells(threshold_mask, blob_keypoints)
     areas = calculate_areas(filled_cells, len(blob_keypoints))
@@ -109,6 +110,32 @@ def threshold(nn_mask):
     th, threshold_mask = cv2.threshold(nn_mask, 170, 255, cv2.THRESH_BINARY)
     return threshold_mask
 
+def erod_dilate(threshold_mask):
+    """
+    Applies closing, erosion, and dilation morphological changes to the threshold image 
+    to close any holes, remove noise, and separate groups of cells.
+
+    :param threshold_mask: threshold mask of the NN image
+    :return: another threshold mask that have the new morphological changes
+    """
+    # closing
+    kernel = np.ones((3, 3), np.uint8)
+    closing = cv2.morphologyEx(
+        threshold_mask, cv2.MORPH_CLOSE, kernel, iterations=3)
+
+    # erosion
+    kernel = np.ones((3, 3), np.uint8)
+    thresh_erosion = cv2.erode(closing, kernel, iterations=3)
+
+    kernel = np.ones((3, 3), np.uint8)
+    opening = cv2.morphologyEx(
+        thresh_erosion, cv2.MORPH_OPEN, kernel, iterations=4)
+
+    # dilation
+    kernel = np.ones((3, 3), np.uint8)
+    thresh_dilation = cv2.dilate(opening, kernel, iterations=2)
+
+    return thresh_dilation
 
 def detect_blobs(threshold_mask):
     """

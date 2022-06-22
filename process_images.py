@@ -170,18 +170,18 @@ def detect_blobs(threshold_mask):
     # maxArea = 2451 when threshold = 215
     params.filterByArea = True
     params.minArea = 400
-    # params.maxArea = 2350
+    # params.maxArea = 6000
 
-    # Filter by Circularity
-    params.filterByCircularity = True
+    # Filter by Circularity - turning off circularity filter helped detect more cells
+    params.filterByCircularity = False
     params.minCircularity = 0.1
 
-    # Filter by Convexity
+    # Filter by Convexity - convexity had no noticable changes
     params.filterByConvexity = False
     params.minConvexity = 0.87
     params.maxConvexity = 1
 
-    # Filter by Inertia
+    # Filter by Inertia - intertia had no noticable changes
     params.filterByInertia = False
     params.minInertiaRatio = 0.01
     params.maxInertiaRatio = 1

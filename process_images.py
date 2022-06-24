@@ -22,7 +22,8 @@ class Dimensions:
 
 def write_image(original_filename, string_label, image):
     """
-    Writes the label onto the image name if the arguments are passed through
+    Writes an image to a file. The filename is constructed by inserting string_label
+    before the extension of original_filename.
 
     For example: if original_filename is 'image.tif' and string_label is '-label', 
     then the filename of the new file will be 'image-label.tif'
@@ -41,12 +42,12 @@ def write_image(original_filename, string_label, image):
 def process_image(image_filename, args):
     """
     Processes the (image_filename) image to get dimensions of 
-    areas, lengths, and width in pixels
+    areas, lengths, and width in pixels. Writes out a csv file 
+    with the number of cells and its dimensions
 
     :param image_filename: the name of the image
     :param args: any arguments that was passed from the user
     to the terminal
-    :writes out a csv file with the number of cells and its dimensions
     """
     input_img = Image.open(image_filename).convert("RGB")
     nn_mask = nn_predict(input_img, args.weights_file)

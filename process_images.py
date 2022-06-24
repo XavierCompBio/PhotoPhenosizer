@@ -24,8 +24,8 @@ def write_image(original_filename, string_label, image):
     """
     Writes the label onto the image name if the arguments are passed through
 
-    For example: --write_nn_mask argument would add the "-nn_mask" label 
-    to the image name and write it out to the directory ('image-nn_mask.tif')
+    For example: if original_filename is 'image.tif' and string_label is '-label', 
+    then the filename of the new file will be 'image-label.tif'
 
     :param original_filename: the name of the image
     :param string_label: the name of the arguments
@@ -46,7 +46,7 @@ def process_image(image_filename, args):
     :param image_filename: the name of the image
     :param args: any arguments that was passed from the user
     to the terminal
-    :return: the csv file of all the metrics in a table
+    :writes out a csv file with the number of cells and its dimensions
     """
     input_img = Image.open(image_filename).convert("RGB")
     nn_mask = nn_predict(input_img, args.weights_file)
@@ -72,7 +72,7 @@ def nn_predict(input_img, weights_filename):
     :param input_img: the input image
     :param weights_filename: if an argument was passed through to
     specify another weights file to be used, then use it
-    :return: the image of the cells from the NN
+    :return: an approximation of a mask indicating where the cells are
     """
     model = torch.load(weights_filename)
     model.eval()
@@ -160,7 +160,7 @@ def detect_blobs(threshold_mask):
     # Finds darker blobs because cells are now black and background is white
     params.blobColor = 0
 
-    # Change thresholds
+    # Perform one iteration of thresholding since image is already thresholded
     params.minThreshold = 10
     params.maxThreshold = 21
 
@@ -169,16 +169,16 @@ def detect_blobs(threshold_mask):
     params.minArea = 400
     params.maxArea = 6000
 
-    # Filter by Circularity - turning off circularity filter helped detect more cells
+    # Filter by Circularity - disabled since it helped detect more cells
     params.filterByCircularity = False
     params.minCircularity = 0.1
 
-    # Filter by Convexity - convexity had no noticable changes
+    # Filter by Convexity - disabled because filtering by convexity had no noticeable changes
     params.filterByConvexity = False
     params.minConvexity = 0.87
     params.maxConvexity = 1
 
-    # Filter by Inertia - intertia had no noticable changes
+    # Filter by Inertia - disabled because filtering by intertia had no noticeable changes
     params.filterByInertia = False
     params.minInertiaRatio = 0.01
     params.maxInertiaRatio = 1
@@ -235,7 +235,7 @@ def fill_cells(threshold_mask, blob_keypoints):
 def calculate_areas(filled_cells, cell_count):
     """
     Calculate the areas of regions that have been identified as cells in an
-    image. Areas are in pixels squared.
+    image. Areas are in pixels.
 
     The given image must have a black background, and each cell region must be
     identified with a unique color starting with 1 and increasing sequentially.

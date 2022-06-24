@@ -1,6 +1,6 @@
-# Pombe Phenosizer
+# Photo Phenosizer
 
-A rapid machine learning-based method to measure cell dimensions in S. pombe.
+A rapid machine learning-based method to measure cell dimensions in Schizosaccharomyces pombe (fission yeast).
 
 ## Description
 
@@ -69,7 +69,7 @@ Contributors names and contact info
 
 * Martin Vo(vom@xavier.edu)
 * Nathan Sommer(sommern1@xavier.edu)
-* Ryan Miller(millerr33@xavier.edu)
+* Ryan Miller(millerry@grinnell.edu)
 
 ## Version History
 

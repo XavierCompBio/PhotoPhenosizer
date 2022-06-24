@@ -165,12 +165,9 @@ def detect_blobs(threshold_mask):
     params.maxThreshold = 21
 
     # Filter by Area.
-    # maxArea = 2685 when threshold = 200
-    # maxArea = 2534 when threshold = 210
-    # maxArea = 2451 when threshold = 215
     params.filterByArea = True
     params.minArea = 400
-    # params.maxArea = 6000
+    params.maxArea = 6000
 
     # Filter by Circularity - turning off circularity filter helped detect more cells
     params.filterByCircularity = False

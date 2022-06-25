@@ -279,6 +279,8 @@ def calculate_dimensions(filled_img, cell_count):
         isolated_img = cv2.drawContours(
             isolated_img, cnts, contourIdx=-1, color=(0, 255, 0), thickness=2, lineType=cv2.LINE_AA)
         # calculate the length and width of each cell using the fitEllipse function
+        if len(cnts) == 0:
+            continue
         ellipse = cv2.fitEllipse(cnts[0])
         lengthEllipse = max(ellipse[1])
         widthEllipse = min(ellipse[1])

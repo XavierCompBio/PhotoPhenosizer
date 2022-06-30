@@ -74,7 +74,9 @@ Contributors names and contact info
 ## Version History
 
 * 1.0.0
-    * Initial Release
+   * Initial Release
+* 1.0.1
+   * Added continue statement to deal with overflow cell error
 
 ## License
 

@@ -17,7 +17,7 @@ import pandas as pd
 from skimage.draw import ellipse
 from skimage.measure import label, regionprops, regionprops_table
 from skimage.transform import rotate
-from skimage import morphology
+from skimage import morphology, img_as_ubyte
 from IPython.display import display
 
 @dataclass
@@ -61,16 +61,16 @@ def process_image(image_filename, args):
     nn_mask = nn_predict(input_img, args.weights_file)
     threshold_mask = threshold(nn_mask)
     threshold_mask = erod_dilate(threshold_mask)
-    area_filtered, label_img_area = area_filter(threshold_mask)
+    area_filtered = area_filter(threshold_mask)
     # Comment iou function out if no need for it
     # calculate_iou(label_img_area)
-    feret(area_filtered, image_filename)
+    write_dimensions(area_filtered, image_filename)
     if args.write_nn_mask:
         write_image(image_filename, '-nn_mask', nn_mask)
     if args.write_threshold_mask:
         write_image(image_filename, '-threshold', threshold_mask)
-    if args.write_area_filter:
-        write_image(image_filename, '-area_filter', label_img_area)
+    if args.write_area_filtered:
+        write_image(image_filename, '-area_filtered', area_filtered)
 
 
 def nn_predict(input_img, weights_filename):
@@ -151,41 +151,12 @@ def area_filter(threshold_mask):
     arr = image > 0
     area_filtered = morphology.remove_small_objects(arr, min_size=700)
     
-    label_img = label(area_filtered)
-    label_img_area = label_img.astype(np.uint8)
-    label_img_area[label_img_area != 0] = 255
-    return area_filtered, label_img_area
+    area_filtered = img_as_ubyte(area_filtered)
 
-def calculate_iou(label_img_area):
-    pp_image = label_img_area.copy()
-    manual = cv2.imread('NT_x40_5_mask.tif')
-    manual = cv2.cvtColor(manual, cv2.COLOR_BGR2GRAY)
-    manual_copy = manual.copy()
-    pp_copy = pp_image.copy()
-
-    # everywhere that is not a white cell, change to 1
-    manual_AOI = manual_copy.copy()
-    pp_AOI = pp_copy.copy()
-    manual_AOI[manual_AOI != 255] = 1
-    pp_AOI[pp_AOI != 255] = 2
+    return area_filtered
 
 
-    cell_color = 255
-    AOU_Total = 0
-    AOI_Total = 0
-    # anywhere where the pixels are the same
-    AOI = np.count_nonzero(manual_AOI == pp_AOI)
-    
-    manual_cell_area = np.count_nonzero(manual_copy == cell_color)
-    
-    pp_cell_area = np.count_nonzero(pp_copy == cell_color)
-
-    AOU = (manual_cell_area + pp_cell_area) - AOI
-
-    print(AOI/AOU)
-
-
-def feret(area_filtered, image_filename):
+def write_dimensions(area_filtered, image_filename):
 
     csv_filename = Path(image_filename).with_suffix('.csv')
     
@@ -213,7 +184,7 @@ def main():
                              'network')
     parser.add_argument('--write_threshold_mask', action='store_true',
                         help='Write the result of thresholding')
-    parser.add_argument('--write_area_filter', action='store_true',
+    parser.add_argument('--write_area_filtered', action='store_true',
                         help='Write the result of area filtering')
     parser.add_argument('--weights_file',
                         help='Specify the path to the weights file')

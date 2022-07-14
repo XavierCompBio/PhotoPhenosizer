@@ -38,11 +38,11 @@ We have had success training our own model using the DeepLabv#FineTunning reposi
 2. Put the trained weights file into the same folder as this repository. To get a sample trained weights file, contact the authors. For training your own weights file from your own segmented images: [Training code](https://github.com/msminhas93/DeepLabv3FineTuning)
 3. Run the below command if you have two images (image1.tif and image2.tif) and a weights file called 'weights.pt', which is a trained PyTorch model. If the weights file is called 'weights.pt' you do not need to add the optional argument, [--weights_file <filename>]. This weights argument is only for when you have a specific weights file that you want to use. The below command will produce image1.csv and image2.csv:
 ```
-python process_images.py --weights_file weights.pt image1.tif image2.tif
+python process_images.py image1.tif image2.tif
 ```
-* You can add optional parameters to save the intermediate pictures with these parameters:
+* You can add optional parameters to specify the weights file and/or save the intermediate pictures:
 ```
-python process_images.py [--weights_file <filename>] [--write_nn_mask] [--write_threshold_mask] [--write_filled_cells]
+python process_images.py [--weights_file <filename>] [--write_nn_mask] [--write_threshold_mask] [--write_area_filtered]
 ```
 #### Bulk Image Processing Instructions:
    
@@ -53,7 +53,7 @@ python process_images.py *.tif
 * If you are on WindowsOS you can run this command:
 
 ```
-for %i in (*.tif) do python3 process_images.py %i [--write_nn_mask] [--write_threshold_mask] [--write_filled_cells] [--weights_file <filename>]
+for %i in (*.tif) do python3 process_images.py %i [--write_nn_mask] [--write_threshold_mask] [--write_area_filtered] [--weights_file <filename>]
 ```
 ## Help
 
@@ -70,13 +70,6 @@ Contributors names and contact info
 * Martin Vo(vom@xavier.edu)
 * Nathan Sommer(sommern1@xavier.edu)
 * Ryan Miller(millerry@grinnell.edu)
-
-## Version History
-
-* 1.0.0
-   * Initial Release
-* 1.0.1
-   * Added continue statement to deal with overflow cell error
 
 ## License
 

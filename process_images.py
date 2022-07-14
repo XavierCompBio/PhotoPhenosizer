@@ -11,6 +11,14 @@ from PIL import Image
 from torchvision import transforms
 from torchvision.utils import save_image
 import numpy as np
+import math
+import matplotlib.pyplot as plt
+import pandas as pd
+from skimage.draw import ellipse
+from skimage.measure import label, regionprops, regionprops_table
+from skimage.transform import rotate
+from skimage import morphology
+from IPython.display import display
 
 @dataclass
 class Dimensions:
@@ -53,17 +61,16 @@ def process_image(image_filename, args):
     nn_mask = nn_predict(input_img, args.weights_file)
     threshold_mask = threshold(nn_mask)
     threshold_mask = erod_dilate(threshold_mask)
-    blob_keypoints = detect_blobs(threshold_mask)
-    filled_cells = fill_cells(threshold_mask, blob_keypoints)
-    areas = calculate_areas(filled_cells, len(blob_keypoints))
-    dimensions = calculate_dimensions(filled_cells, len(areas))
-    write_result(image_filename, areas, dimensions, blob_keypoints)
+    area_filtered, label_img_area = area_filter(threshold_mask)
+    # Comment iou function out if no need for it
+    # calculate_iou(label_img_area)
+    feret(area_filtered, image_filename)
     if args.write_nn_mask:
         write_image(image_filename, '-nn_mask', nn_mask)
     if args.write_threshold_mask:
         write_image(image_filename, '-threshold', threshold_mask)
-    if args.write_filled_cells:
-        write_image(image_filename, '-filled_cells', filled_cells)
+    if args.write_area_filter:
+        write_image(image_filename, '-area_filter', label_img_area)
 
 
 def nn_predict(input_img, weights_filename):
@@ -138,184 +145,62 @@ def erod_dilate(threshold_mask):
 
     return thresh_dilation
 
-def detect_blobs(threshold_mask):
-    """
-    Creates a list of keypoints of all the cells. Keypoints are the x, y coordinates
-    of the cells
+def area_filter(threshold_mask):
 
-    Different parameters can be adjusted to determine how accurate the selection
-    should be. This is dependent on type of microscope and settings within it.
+    image = threshold_mask.copy()
+    arr = image > 0
+    area_filtered = morphology.remove_small_objects(arr, min_size=700)
+    
+    label_img = label(area_filtered)
+    label_img_area = label_img.astype(np.uint8)
+    label_img_area[label_img_area != 0] = 255
+    return area_filtered, label_img_area
 
-    :param threshold_mask: a threshold image of the image from the NN
-    :return: the list of keypoints of each cell
-    """
-    # Cells are now black and background is now white
-    retval, threshold = cv2.threshold(
-        threshold_mask, 155, 255, cv2.THRESH_BINARY_INV)
+def calculate_iou(label_img_area):
+    pp_image = label_img_area.copy()
+    manual = cv2.imread('NT_x40_5_mask.tif')
+    manual = cv2.cvtColor(manual, cv2.COLOR_BGR2GRAY)
+    manual_copy = manual.copy()
+    pp_copy = pp_image.copy()
 
-    # Setup SimpleBlobDetector parameters.
-    params = cv2.SimpleBlobDetector_Params()
-
-    # Finds all the blobs of a specific color.
-    params.filterByColor = 1
-    # Finds darker blobs because cells are now black and background is white
-    params.blobColor = 0
-
-    # Perform one iteration of thresholding since image is already thresholded
-    params.minThreshold = 10
-    params.maxThreshold = 21
-
-    # Filter by Area.
-    params.filterByArea = True
-    params.minArea = 400
-    params.maxArea = 6000
-
-    # Filter by Circularity - disabled since it helped detect more cells
-    params.filterByCircularity = False
-    params.minCircularity = 0.1
-
-    # Filter by Convexity - disabled because filtering by convexity had no noticeable changes
-    params.filterByConvexity = False
-    params.minConvexity = 0.87
-    params.maxConvexity = 1
-
-    # Filter by Inertia - disabled because filtering by intertia had no noticeable changes
-    params.filterByInertia = False
-    params.minInertiaRatio = 0.01
-    params.maxInertiaRatio = 1
-
-    # Create a detector with the parameters
-    ver = (cv2.__version__).split('.')
-    if int(ver[0]) < 3:
-        detector = cv2.SimpleBlobDetector(params)
-    else:
-        detector = cv2.SimpleBlobDetector_create(params)
-
-    # Detect blobs.
-    blob_keypoints = detector.detect(threshold)
-
-    blob_keypoints = []
-    for keypoint in detector.detect(threshold):
-        x = int(keypoint.pt[0])
-        y = int(keypoint.pt[1])
-        color = threshold_mask[y, x]
-        if color == 255:
-            blob_keypoints.append(keypoint)
-
-    return blob_keypoints
+    # everywhere that is not a white cell, change to 1
+    manual_AOI = manual_copy.copy()
+    pp_AOI = pp_copy.copy()
+    manual_AOI[manual_AOI != 255] = 1
+    pp_AOI[pp_AOI != 255] = 2
 
 
-def fill_cells(threshold_mask, blob_keypoints):
-    """
-    Fill in each cell in the threshold image with a unique grayscale color up to 254. 
-    The given blob keypoints helps with knowing which cells to fill in.
+    cell_color = 255
+    AOU_Total = 0
+    AOI_Total = 0
+    # anywhere where the pixels are the same
+    AOI = np.count_nonzero(manual_AOI == pp_AOI)
+    
+    manual_cell_area = np.count_nonzero(manual_copy == cell_color)
+    
+    pp_cell_area = np.count_nonzero(pp_copy == cell_color)
 
-    :param threshold_mask: the threshold image from the NN
-    :param blob_keypoints: the keypoints of all the cells
-    :return: an image with just the wanted cells in a grays with
-    a black background
-    """
-    im_floodfill = threshold_mask.copy()
+    AOU = (manual_cell_area + pp_cell_area) - AOI
 
-    if len(blob_keypoints) > 254:
-        print("Warning: Image contains more than 254 cells. Only the first 254 cells will be included.")
-    # cycle through all the keypoints for the cells and fill in each cell with a gray color
-    cell_color = 1
-    for keypoint in blob_keypoints[:254]:
-        x = int(keypoint.pt[0])
-        y = int(keypoint.pt[1])
-        cv2.floodFill(im_floodfill, None, (x, y), cell_color)
-        cell_color += 1
-
-    # change white pixels to black
-    im_floodfill[im_floodfill == 255] = 0
-
-    return im_floodfill
+    print(AOI/AOU)
 
 
-def calculate_areas(filled_cells, cell_count):
-    """
-    Calculate the areas of regions that have been identified as cells in an
-    image. Areas are in pixels.
+def feret(area_filtered, image_filename):
 
-    The given image must have a black background, and each cell region must be
-    identified with a unique color starting with 1 and increasing sequentially.
-
-    :param filled_cells: the image containing cell regions
-    :param cell_count: the number of cell regions in the image
-    :return: a list containing the areas of the cell regions
-    """
-
-    # since each cell region is a different color, a histogram of pixel counts
-    # of each color will give us the number of pixels in each cell region
-    areas = cv2.calcHist([filled_cells], [0], None, [256], [0, 255])
-    # we only want the values for the colors 1 through cell_count
-    areas = areas[1:cell_count + 1, 0]
-
-    return areas
-
-
-def calculate_dimensions(filled_img, cell_count):
-    """
-    Calculate the dimensions of regions that have been identified as cells
-    in an image. Dimensions are in pixels.
-
-    Given image must have same properties as in calculate_areas() function
-
-    :param filled_img: the image containing the cell regions
-    :param cell_count: the number of cell regions in the image
-    :return: a list containing the dimensions of the cell regions
-    """
-    dimensions = []
-    for color in range(1, cell_count + 1):
-        isolated_img = filled_img.copy()
-        # change all pixels that do not belong to this cell to black, so isolated_img
-        # is all white except for the cell we want
-        isolated_img[filled_img != color] = 0
-        isolated_img[filled_img == color] = 255
-        # detect the contours on the binary image using cv2.CHAIN_APPROX_NONE
-        cnts, hierarchy = cv2.findContours(
-            isolated_img, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
-        isolated_img = cv2.drawContours(
-            isolated_img, cnts, contourIdx=-1, color=(0, 255, 0), thickness=2, lineType=cv2.LINE_AA)
-        # calculate the length and width of each cell using the fitEllipse function
-        if len(cnts) == 0:
-            continue
-        ellipse = cv2.fitEllipse(cnts[0])
-        lengthEllipse = max(ellipse[1])
-        widthEllipse = min(ellipse[1])
-
-        # calculate the length of each cell using the minEnclosingCircle function
-        (x, y), r = cv2.minEnclosingCircle(cnts[0])
-        lengthCircle = r * 2
-        # calculate the area of each cell using the areaContour function
-        areaContour = cv2.contourArea(cnts[0])
-        dimensions.append(Dimensions(
-            lengthCircle, lengthEllipse, widthEllipse, areaContour))
-
-    return dimensions
-
-
-def write_result(image_filename, areas, dimensions, blob_keypoints):
-    """
-    Write all the results of the cells in a csv file
-
-    :param image_filename: name used to label the csv file
-    :param areas: list of the areas of the cells
-    :param dimensions: list of the different dimensions of the cells
-    :param blob_keypoints: list of all the x, y of the cells
-    :return: a csv file that contains all the metrics of the cells
-    """
     csv_filename = Path(image_filename).with_suffix('.csv')
-    with open(csv_filename, 'w') as f:
-        writer = csv.writer(f)
-        writer.writerow(['ID', 'x', 'y', 'area', 'areaContour', 'lengthCircle',
-                         'lengthEllipse', 'widthEllipse'])
-        for cell_id, (area, keypoint, dimension) in enumerate(zip(areas, blob_keypoints, dimensions), start=1):
-            writer.writerow([cell_id, int(keypoint.pt[0]), int(keypoint.pt[1]), area, dimension.areaContour,
-                             dimension.lengthCircle, dimension.lengthEllipse,
-                             dimension.widthEllipse])
+    
+    image = area_filtered.copy()
 
+    label_img = label(image)
+
+    props = regionprops_table(label_img, properties=(
+                                                    'area_filled',
+                                                    'feret_diameter_max',
+                                                    'axis_minor_length'))
+
+    df = pd.DataFrame(props)
+
+    df.to_csv(str(csv_filename))
 
 def main():
     """
@@ -328,9 +213,8 @@ def main():
                              'network')
     parser.add_argument('--write_threshold_mask', action='store_true',
                         help='Write the result of thresholding')
-    parser.add_argument('--write_filled_cells', action='store_true',
-                        help='Write the result of filling detected cells with '
-                             'different grays')
+    parser.add_argument('--write_area_filter', action='store_true',
+                        help='Write the result of area filtering')
     parser.add_argument('--weights_file',
                         help='Specify the path to the weights file')
     parser.add_argument('image_files', nargs='+')

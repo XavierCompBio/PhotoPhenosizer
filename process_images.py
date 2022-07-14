@@ -146,7 +146,12 @@ def erod_dilate(threshold_mask):
     return thresh_dilation
 
 def area_filter(threshold_mask):
+    """
+    Filters out groups of pixels that are below 700 pixels in area.
 
+    :param threshold_mask: threshold mask of the NN image
+    :return: the image with the filtered areas
+    """
     image = threshold_mask.copy()
     arr = image > 0
     area_filtered = morphology.remove_small_objects(arr, min_size=700)
@@ -157,7 +162,14 @@ def area_filter(threshold_mask):
 
 
 def write_dimensions(area_filtered, image_filename):
+    """
+    Write the dimensions for the cell dimensions in a csv file. The dimensions are measured
+    using scikit-image's regionprops_table function. Area is represented by area_filled, 
+    Length is represented by feret_diameter_max, and Width is represented by axis_minor_length
 
+    :param area_filtered: the image with the filtered areas
+    :param image_filename: the filename of the original image input
+    """
     csv_filename = Path(image_filename).with_suffix('.csv')
     
     image = area_filtered.copy()

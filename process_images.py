@@ -135,6 +135,7 @@ def erod_dilate(threshold_mask):
     kernel = np.ones((3, 3), np.uint8)
     thresh_erosion = cv2.erode(closing, kernel, iterations=3)
 
+    # opening
     kernel = np.ones((3, 3), np.uint8)
     opening = cv2.morphologyEx(
         thresh_erosion, cv2.MORPH_OPEN, kernel, iterations=4)
@@ -183,7 +184,7 @@ def write_dimensions(area_filtered, image_filename):
 
     df = pd.DataFrame(props)
 
-    df.to_csv(str(csv_filename))
+    df.to_csv('csv/'+str(csv_filename), index=True)
 
 def main():
     """

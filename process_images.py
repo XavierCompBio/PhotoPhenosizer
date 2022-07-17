@@ -20,6 +20,8 @@ from skimage.transform import rotate
 from skimage import morphology, img_as_ubyte
 from IPython.display import display
 
+import feret
+
 @dataclass
 class Dimensions:
     lengthCircle: float
@@ -115,7 +117,7 @@ def threshold(nn_mask):
     :return: the threshold mask of the NN image
     """
     # any pixels that are above the first number, turn it into 255 (white)
-    th, threshold_mask = cv2.threshold(nn_mask, 170, 255, cv2.THRESH_BINARY)
+    th, threshold_mask = cv2.threshold(nn_mask, 200, 255, cv2.THRESH_BINARY)
     return threshold_mask
 
 def erod_dilate(threshold_mask):
@@ -171,20 +173,25 @@ def write_dimensions(area_filtered, image_filename):
     :param area_filtered: the image with the filtered areas
     :param image_filename: the filename of the original image input
     """
+    os.makedirs('csv', exist_ok=True)
     csv_filename = Path(image_filename).with_suffix('.csv')
     
     image = area_filtered.copy()
 
     label_img = label(image)
+    
+    with open(str(Path('csv') / csv_filename), 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(['Number', 'Area', 'Feret', 'MinFeret'])
 
-    props = regionprops_table(label_img, properties=(
-                                                    'area_filled',
-                                                    'feret_diameter_max',
-                                                    'axis_minor_length'))
+        for region in regionprops(label_img):
+            label_img_copy = label_img.copy()
+            label_img_copy[label_img_copy != region.label] = 0
 
-    df = pd.DataFrame(props)
+            maxf = feret.max(label_img_copy, edge=True)
+            minf = feret.min(label_img_copy, edge=True)
 
-    df.to_csv('csv/'+str(csv_filename), index=True)
+            writer.writerow([region.label, region.area_filled, maxf, minf])
 
 def main():
     """

@@ -55,6 +55,22 @@ python process_images.py *.tif
 ```
 for %i in (*.tif) do python3 process_images.py %i [--write_nn_mask] [--write_threshold_mask] [--write_area_filtered] [--weights_file <filename>]
 ```
+#### Other scripts:
+* For the IOU script, run the command:
+'''
+python calculate_iou.py image1.tif image2.tif
+'''
+
+* For the accuracy classification script, run the command:
+'''
+python classification_acc.py image1.tif image2.tif
+'''
+
+* For labeling images, run the command:
+'''
+python label_image.py image1-area_filtered.tif image2-area_filtered.tif 
+'''
+This will create directories of 'labeled_csv' and 'labeled_images' where the labeled csv files and images will go to respectively.
 ## Help
 
 To bring up a help message, run this command:

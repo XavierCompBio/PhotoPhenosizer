@@ -9,6 +9,16 @@ import os
 import feret
 
 def label_image(predicted_mask, original_image, original_filename): 
+    """
+    Writes out a label image of the original image with the labels in the random order
+    that PP detected of each cell. Also writes out the csv of each of the labeled regions.
+    Puts all of the labeled images into a directory, 'labeled_images'. Puts all of the 
+    labeleed csv files into a directory, 'labeled_csv'
+
+    :param predicted_mask: The mask that PP produced in process_images.py
+    :param original_image: The original image that was an input for PP
+    :param original_filename: The name of the original image
+    """
 
     original_path = Path(original_filename)
     new_stem = original_path.stem + '-labeled'

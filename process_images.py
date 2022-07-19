@@ -1,7 +1,6 @@
 import csv
 import os
 from argparse import ArgumentParser
-from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -11,24 +10,10 @@ from PIL import Image
 from torchvision import transforms
 from torchvision.utils import save_image
 import numpy as np
-import math
-import matplotlib.pyplot as plt
-import pandas as pd
-from skimage.draw import ellipse
-from skimage.measure import label, regionprops, regionprops_table
-from skimage.transform import rotate
+from skimage.measure import label, regionprops
 from skimage import morphology, img_as_ubyte
-from IPython.display import display
 
 import feret
-
-@dataclass
-class Dimensions:
-    lengthCircle: float
-    lengthEllipse: float
-    widthEllipse: float
-    areaContour: float
-
 
 def write_image(original_filename, string_label, image):
     """

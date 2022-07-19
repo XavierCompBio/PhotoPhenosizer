@@ -4,6 +4,17 @@ import numpy as np
 
 
 def calculate_iou(image1, image2):
+    """
+    Calculates the IOU of the automated segemented image mask. Can be used
+    as a way to test the accuracy of segmentation algorithms.
+
+    For example: Two parameters should contain two filenames, one for the
+    automated generated mask and one for the manually segmented mask for 
+    comparison.
+
+    :param image1: The filename of the first image mask
+    :param image2: The filename of the second image mask
+    """
     
     image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
     image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
@@ -41,6 +52,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-
-

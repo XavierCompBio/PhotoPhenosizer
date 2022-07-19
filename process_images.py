@@ -153,7 +153,8 @@ def write_dimensions(area_filtered, image_filename):
     """
     Write the dimensions for the cell dimensions in a csv file. The dimensions are measured
     using scikit-image's regionprops_table function. Area is represented by area_filled, 
-    Length is represented by feret_diameter_max, and Width is represented by axis_minor_length
+    Length is represented by maximum feret diameter, 
+    and Width is represented by minimum feret diameter
 
     :param area_filtered: the image with the filtered areas
     :param image_filename: the filename of the original image input

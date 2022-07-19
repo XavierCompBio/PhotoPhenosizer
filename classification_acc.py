@@ -3,7 +3,15 @@ import cv2
 from skimage.measure import label, regionprops
 
 def classification_acc(truth_mask, predicted_mask):
+    """
+    Outputs the true positives rate, false negatives rate, 
+    and false positives for the automated segmentation algorithm. 
+    This script can be used with other segmentation results to test 
+    the accuracy of the segmentation algorithm.
 
+    :param truth_mask: The filename of the manually segmented mask
+    :param predicted_mask: The filename of the automated segmented mask
+    """
     true_pos = 0
     false_pos = 0
     false_neg = 0
@@ -31,10 +39,6 @@ def classification_acc(truth_mask, predicted_mask):
     print(f"True Positive Rate: {true_pos}/{true_pos+false_neg} = {true_pos/(true_pos+false_neg)}")
     print(f"False Positives: {false_pos}")
     print(f"False Negative Rate: {false_neg}/{true_pos+false_neg} = {false_neg/(true_pos+false_neg)}")
-
-    
-
-
 
 def main():
 

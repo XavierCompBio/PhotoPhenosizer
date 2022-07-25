@@ -83,7 +83,7 @@ This will bring the help menu up for more information on what arguments can be p
 
 Contributors names and contact info
 
-* Martin Vo(vom@xavier.edu)
+* Martin Vo(mvo58805@med.lecom.edu)
 * Nathan Sommer(sommern1@xavier.edu)
 * Ryan Miller(millerry@grinnell.edu)
 

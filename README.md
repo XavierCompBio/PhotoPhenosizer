@@ -6,9 +6,9 @@ A rapid machine learning-based method to measure cell dimensions in Schizosaccha
 
 We have developed a streamline approach to acquiring cell dimensions in S. pombe. With this pipeline, one can go from microscopy images to statistical results about 10x faster using consumer level hardware than manual segmentation and measurements. It is built on the PyTorch framework with the utilization of DeeplabV3 for training purposes. However, any PyTorch trained models that can accept images can be used.
 
-This program takes microscopy images of fission yeast cells as its input and it will output a csv file for each image. Each csv file contains the count of cells, x and y pixel coordinates of the cell, and its cell dimensions (area, length, and width).
+This program takes microscopy images of fission yeast cells as its input and it will output a csv file for each image. Each csv file contains the cell dimensions (area, length, and width).
 
-The process is accomplished by utilizing a neural network to create an initial mask image of the cells that it was able to identify and then thresholding is applied to clean up the initial mask. After, each cell is filled with a different grayscale color and the dimensions are measured using opencv functions. The program can optionally save any of the intermediate images throughout the process by using optional arguments.
+The process is accomplished by utilizing a neural network to create an initial mask image of the cells that it was able to identify and then thresholding, erosion, and dilation is applied to clean up the initial mask. After, each cell is detected using sci-kit image libraries with area being measured using the same libraries. A python library, Feret, was used to measure the max and min feret diameters to correspond with length and width respectively. The program can optionally save any of the intermediate images throughout the process by using optional arguments.
 
 ## Getting Started
 

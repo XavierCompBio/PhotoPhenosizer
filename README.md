@@ -10,6 +10,8 @@ This program takes microscopy images of fission yeast cells as its input and it 
 
 The process is accomplished by utilizing a neural network to create an initial mask image of the cells that it was able to identify and then thresholding, erosion, and dilation is applied to clean up the initial mask. After, each cell is detected using sci-kit image libraries with area being measured using the same libraries. A python library, Feret, was used to measure the max and min feret diameters to correspond with length and width respectively. The program can optionally save any of the intermediate images throughout the process by using optional arguments.
 
+Article: https://www.micropublication.org/journals/biology/micropub-biology-000620
+
 ## Getting Started
 
 ### Dependencies

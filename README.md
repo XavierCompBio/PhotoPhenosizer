@@ -30,7 +30,7 @@ pip3 install -r requirements.txt
 
 ### Training
 
-We have had success training our own model using the DeepLabv#FineTunning repository: https://github.com/msminhas93/DeepLabv3FineTuning 
+We have had success training our own model using the DeepLabv3FineTunning repository: https://github.com/msminhas93/DeepLabv3FineTuning 
 
 ### Usage
 #### General Instructions:
